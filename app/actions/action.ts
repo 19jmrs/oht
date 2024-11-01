@@ -1,10 +1,14 @@
 "use server";
 
 import { db } from "@/db";
-import { habitsTable } from "@/db/schema";
+import { habitsLogTable, habitsTable } from "@/db/schema";
 import { cookies } from "next/headers";
 import { decrypt } from "../lib/session";
 
+/**
+ * Creates a new habit for the logged user in the database
+ * @param habitData: string - the name of the habit to be created
+ */
 export async function createHabit(habitData: string) {
   const cookie = (await cookies()).get("session")?.value;
   const session = await decrypt(cookie);
@@ -33,6 +37,55 @@ export async function createHabit(habitData: string) {
   if (!res) {
     return {
       message: "An error occurred while creating your habit",
+    };
+  }
+
+  return {
+    message: "200",
+  };
+}
+
+/**
+ *
+ * @returns an array of habits for the logged user
+ */
+export async function getHabits() {
+  const cookie = (await cookies()).get("session")?.value;
+  const session = await decrypt(cookie);
+
+  if (!session) {
+    return [];
+  }
+
+  const habits = await db
+    .select({
+      id: habitsTable.id,
+      name: habitsTable.name,
+    })
+    .from(habitsTable);
+
+  return habits;
+}
+
+/**
+ * @param habitId: - id of the the habit to be tracked
+ * @param date: - date when the habit was completed
+ * @returns: 200 if it was a success and 500 for the rest
+ */
+export async function trackHabit(habitId: number, date: string) {
+  const habitLog = {
+    habit_id: habitId,
+    date: date,
+  };
+
+  const res = await db
+    .insert(habitsLogTable)
+    .values(habitLog)
+    .returning({ id: habitsLogTable.id });
+
+  if (!res) {
+    return {
+      message: "500",
     };
   }
 
