@@ -22,6 +22,7 @@ import { date } from "drizzle-orm/mysql-core";
 import { Calendar } from "./ui/calendar";
 import { Toast, ToastAction } from "./ui/toast";
 import { useToast } from "@/hooks/use-toast";
+import { revalidatePath } from "next/cache";
 
 interface Habit {
   id: number;
@@ -30,9 +31,11 @@ interface Habit {
 
 export function HabitsTable() {
   const [habits, setHabits] = useState<Habit[]>([]);
+
   const [selectedDates, setSelectedDates] = useState<{
     [key: number]: Date | undefined;
   }>({});
+
   const { toast } = useToast();
 
   useEffect(() => {
@@ -49,6 +52,16 @@ export function HabitsTable() {
     date: Date | undefined
   ) {
     event.preventDefault();
+
+    if (date === undefined || date === null) {
+      toast({
+        variant: "destructive",
+        title: "Uh oh! Something went wrong.",
+        description: "You need to add a Date to complete your habit!",
+        action: <ToastAction altText="Try again">Try again</ToastAction>,
+      });
+    }
+
     const stringDate = date ? format(date, "yyyy-MM-dd") : "";
     trackHabit(habitId, stringDate).then((res) => {
       if (res.message === "200") {

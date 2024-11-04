@@ -4,7 +4,7 @@ import { db } from "@/db";
 import { habitsLogTable, habitsTable } from "@/db/schema";
 import { cookies } from "next/headers";
 import { decrypt } from "../lib/session";
-
+import { eq } from "drizzle-orm";
 /**
  * Creates a new habit for the logged user in the database
  * @param habitData: string - the name of the habit to be created
@@ -62,7 +62,8 @@ export async function getHabits() {
       id: habitsTable.id,
       name: habitsTable.name,
     })
-    .from(habitsTable);
+    .from(habitsTable)
+    .where(eq(habitsTable.user_id, session.userId));
 
   return habits;
 }
@@ -73,9 +74,13 @@ export async function getHabits() {
  * @returns: 200 if it was a success and 500 for the rest
  */
 export async function trackHabit(habitId: number, date: string) {
+  const cookie = (await cookies()).get("session")?.value;
+  const session = await decrypt(cookie);
+
   const habitLog = {
     habit_id: habitId,
     date: date,
+    user_id: session!.userId,
   };
 
   const res = await db

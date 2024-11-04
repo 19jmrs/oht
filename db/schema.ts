@@ -19,6 +19,7 @@ export const habitsLogTable = pgTable("habits_log", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   habit_id: integer("habit_id").references(() => habitsTable.id),
   date: text("date").notNull(),
+  user_id: integer("user_id").references(() => usersTable.id),
 });
 
 export type User = typeof usersTable.$inferSelect;

@@ -25,6 +25,7 @@ export async function login(state: FormState, formData: FormData) {
     .from(usersTable)
     .where(eq(usersTable.email, email));
 
+  console.log(user[0]);
   if (!user) {
     return {
       message: "User not found",
@@ -32,7 +33,7 @@ export async function login(state: FormState, formData: FormData) {
   }
 
   const validPassword = validatePassword(password, user[0].hash, user[0].salt);
-
+  console.log(validPassword);
   if (!validPassword) {
     return {
       message: "Invalid password",

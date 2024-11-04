@@ -15,11 +15,14 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { createHabit } from "@/app/actions/action";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
+import { revalidatePath } from "next/cache";
 
 export function NewHabit() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const [open, setOpen] = useState(false);
+  const router = useRouter();
 
   async function getHabitData(event: React.MouseEvent<HTMLButtonElement>) {
     event.preventDefault();
@@ -33,6 +36,7 @@ export function NewHabit() {
           variant: "default",
         });
         setOpen(false);
+        router.refresh();
       } else {
         toast({
           title: "An error occurred while creating your habit.",
